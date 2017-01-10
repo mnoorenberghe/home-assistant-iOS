@@ -19,7 +19,6 @@ import ObjectMapper
 import DeviceKit
 import PermissionScope
 import Crashlytics
-import RealmSwift
 import UserNotifications
 
 let prefs = UserDefaults(suiteName: "group.io.robbie.homeassistant")!
@@ -47,6 +46,11 @@ public class HomeAssistantAPI {
 
     var URLSet: Bool = false
     var PasswordSet: Bool = false
+
+    var allEntities: [Entity] = []
+    var entitiesByID: [String:Entity] = [:]
+    var entitiesByType: [String:[Entity]] = [:]
+    var entitiesByGroup: [String:[Entity]] = [:]
 
     private var baseAPIURL: String = ""
     private var apiPassword: String = ""
@@ -119,8 +123,6 @@ public class HomeAssistantAPI {
                                                 object: nil,
                                                 userInfo: nil)
 
-                let _ = self.GetStates()
-
                 if self.locationEnabled {
                     self.trackLocation()
                 }
@@ -132,7 +134,11 @@ public class HomeAssistantAPI {
 
                 //                self.GetHistory()
                 self.startStream()
-                fulfill(config)
+                let _ = self.GetStates().then { _ in
+                    fulfill(config)
+                    }.catch {error in
+                        reject(error)
+                }
                 }.catch {error in
                     print("Error at launch!", error)
                     Crashlytics.sharedInstance().recordError(error)
@@ -284,30 +290,32 @@ public class HomeAssistantAPI {
             Crashlytics.sharedInstance().recordError(error)
         }
 
-        for zone in realm.objects(Zone.self) {
-            if zone.trackingEnabled == false {
-                print("Skipping zone set to not track!")
-                continue
-            }
-            do {
-                let _ = try Beacons.monitor(geographicRegion: zone.locationCoordinates(),
-                                            radius: CLLocationDistance(zone.Radius),
-                                            onStateDidChange: { newState in
-                                                var updateType = LocationUpdateTypes.RegionEnter
-                                                if newState == RegionState.exited {
-                                                    updateType = LocationUpdateTypes.RegionExit
-                                                }
-                                                self.submitLocation(updateType: updateType,
-                                                                    coordinates: zone.locationCoordinates(),
-                                                                    accuracy: 1,
-                                                                    zone: zone)
-                }) { error in
-                    CLSLogv("Error in region monitoring: %@", getVaList([error.localizedDescription]))
+        if let zoneEntities = self.entitiesByType["Zone"] as? [Zone] {
+            for zone in zoneEntities {
+                if zone.trackingEnabled == false {
+                    print("Skipping zone set to not track!")
+                    continue
+                }
+                do {
+                    let _ = try Beacons.monitor(geographicRegion: zone.locationCoordinates(),
+                                                radius: CLLocationDistance(zone.Radius),
+                                                onStateDidChange: { newState in
+                                                    var updateType = LocationUpdateTypes.RegionEnter
+                                                    if newState == RegionState.exited {
+                                                        updateType = LocationUpdateTypes.RegionExit
+                                                    }
+                                                    self.submitLocation(updateType: updateType,
+                                                                        coordinates: zone.locationCoordinates(),
+                                                                        accuracy: 1,
+                                                                        zone: zone)
+                    }) { error in
+                        CLSLogv("Error in region monitoring: %@", getVaList([error.localizedDescription]))
+                        Crashlytics.sharedInstance().recordError(error)
+                    }
+                } catch let error {
+                    CLSLogv("Error when setting up zones for tracking: %@", getVaList([error.localizedDescription]))
                     Crashlytics.sharedInstance().recordError(error)
                 }
-            } catch let error {
-                CLSLogv("Error when setting up zones for tracking: %@", getVaList([error.localizedDescription]))
-                Crashlytics.sharedInstance().recordError(error)
             }
         }
 
@@ -429,61 +437,101 @@ public class HomeAssistantAPI {
 
     // swiftlint:disable:next cyclomatic_complexity function_body_length
     func storeEntities(entities: [Entity]) {
+        var groups: [Group] = []
         for entity in entities {
-            // swiftlint:disable:next force_try
-            try! realm.write {
-                switch entity {
-                case is Automation:
-                    realm.create(Automation.self, value: entity, update: true)
-                case is BinarySensor:
-                    realm.create(BinarySensor.self, value: entity, update: true)
-                case is Climate:
-                    realm.create(Climate.self, value: entity, update: true)
-                case is DeviceTracker:
-                    realm.create(DeviceTracker.self, value: entity, update: true)
-                case is GarageDoor:
-                    realm.create(GarageDoor.self, value: entity, update: true)
-                case is Group:
-                    if let currentObject = realm.object(ofType: Group.self, forPrimaryKey: entity.ID as AnyObject) {
-                        if let group = entity as? Group {
-                            group.Order = currentObject.Order
-                            realm.create(Group.self, value: entity, update: true)
-                        }
-                    } else {
-                        realm.create(Group.self, value: entity, update: true)
+            allEntities.append(entity)
+            switch entity {
+            case let automation as Automation:
+                if entitiesByType["Automation"] == nil { entitiesByType["Automation"] = [] }
+                entitiesByID[automation.ID] = automation
+                entitiesByType["Automation"]?.append(automation)
+            case let binarysensor as BinarySensor:
+                if entitiesByType["BinarySensor"] == nil { entitiesByType["BinarySensor"] = [] }
+                entitiesByID[binarysensor.ID] = binarysensor
+                entitiesByType["BinarySensor"]?.append(binarysensor)
+            case let climate as Climate:
+                if entitiesByType["Climate"] == nil { entitiesByType["Climate"] = [] }
+                entitiesByID[climate.ID] = climate
+                entitiesByType["Climate"]?.append(climate)
+            case let devicetracker as DeviceTracker:
+                if entitiesByType["DeviceTracker"] == nil { entitiesByType["DeviceTracker"] = [] }
+                entitiesByID[devicetracker.ID] = devicetracker
+                entitiesByType["DeviceTracker"]?.append(devicetracker)
+            case let garagedoor as GarageDoor:
+                if entitiesByType["GarageDoor"] == nil { entitiesByType["GarageDoor"] = [] }
+                entitiesByID[garagedoor.ID] = garagedoor
+                entitiesByType["GarageDoor"]?.append(garagedoor)
+            case let group as Group:
+                entitiesByID[group.ID] = group
+                groups.append(group)
+            case let fan as Fan:
+                if entitiesByType["Fan"] == nil { entitiesByType["Fan"] = [] }
+                entitiesByID[fan.ID] = fan
+                entitiesByType["Fan"]?.append(fan)
+            case let inputboolean as InputBoolean:
+                if entitiesByType["InputBoolean"] == nil { entitiesByType["InputBoolean"] = [] }
+                entitiesByID[inputboolean.ID] = inputboolean
+                entitiesByType["InputBoolean"]?.append(inputboolean)
+            case let inputselect as InputSelect:
+                if entitiesByType["InputSelect"] == nil { entitiesByType["InputSelect"] = [] }
+                entitiesByID[inputselect.ID] = inputselect
+                entitiesByType["InputSelect"]?.append(inputselect)
+            case let light as Light:
+                if entitiesByType["Light"] == nil { entitiesByType["Light"] = [] }
+                entitiesByID[light.ID] = light
+                entitiesByType["Light"]?.append(light)
+            case let lock as Lock:
+                if entitiesByType["Lock"] == nil { entitiesByType["Lock"] = [] }
+                entitiesByID[lock.ID] = lock
+                entitiesByType["Lock"]?.append(lock)
+            case let mediaplayer as MediaPlayer:
+                if entitiesByType["MediaPlayer"] == nil { entitiesByType["MediaPlayer"] = [] }
+                entitiesByID[mediaplayer.ID] = mediaplayer
+                entitiesByType["MediaPlayer"]?.append(mediaplayer)
+            case let scene as Scene:
+                if entitiesByType["Scene"] == nil { entitiesByType["Scene"] = [] }
+                entitiesByID[scene.ID] = scene
+                entitiesByType["Scene"]?.append(scene)
+            case let script as Script:
+                if entitiesByType["Script"] == nil { entitiesByType["Script"] = [] }
+                entitiesByID[script.ID] = script
+                entitiesByType["Script"]?.append(script)
+            case let sensor as Sensor:
+                if entitiesByType["Sensor"] == nil { entitiesByType["Sensor"] = [] }
+                entitiesByID[sensor.ID] = sensor
+                entitiesByType["Sensor"]?.append(sensor)
+            case let sun as Sun:
+                if entitiesByType["Sun"] == nil { entitiesByType["Sun"] = [] }
+                entitiesByID[sun.ID] = sun
+                entitiesByType["Sun"]?.append(sun)
+            case let switchEntity as Switch:
+                if entitiesByType["Switch"] == nil { entitiesByType["Switch"] = [] }
+                entitiesByID[switchEntity.ID] = switchEntity
+                entitiesByType["Switch"]?.append(switchEntity)
+            case let thermostat as Thermostat:
+                if entitiesByType["Thermostat"] == nil { entitiesByType["Thermostat"] = [] }
+                entitiesByID[thermostat.ID] = thermostat
+                entitiesByType["Thermostat"]?.append(thermostat)
+            case let weblink as Weblink:
+                if entitiesByType["Weblink"] == nil { entitiesByType["Weblink"] = [] }
+                entitiesByID[weblink.ID] = weblink
+                entitiesByType["Weblink"]?.append(weblink)
+            case let zone as Zone:
+                if entitiesByType["Zone"] == nil { entitiesByType["Zone"] = [] }
+                entitiesByID[zone.ID] = zone
+                entitiesByType["Zone"]?.append(zone)
+            default:
+                print("Unable to save \(entity.Domain)!")
+            }
+            for group in groups {
+                if entitiesByGroup[group.ID] == nil { entitiesByGroup[group.ID] = [] }
+                for entityId in group.EntityIds {
+                    if let entity = entitiesByID[entityId] {
+                        entitiesByGroup[group.ID]?.append(entity)
                     }
-                case is Fan:
-                    realm.create(Fan.self, value: entity, update: true)
-                case is InputBoolean:
-                    realm.create(InputBoolean.self, value: entity, update: true)
-                case is InputSelect:
-                    realm.create(InputSelect.self, value: entity, update: true)
-                case is Light:
-                    realm.create(Light.self, value: entity, update: true)
-                case is Lock:
-                    realm.create(Lock.self, value: entity, update: true)
-                case is MediaPlayer:
-                    realm.create(MediaPlayer.self, value: entity, update: true)
-                case is Scene:
-                    realm.create(Scene.self, value: entity, update: true)
-                case is Script:
-                    realm.create(Script.self, value: entity, update: true)
-                case is Sensor:
-                    realm.create(Sensor.self, value: entity, update: true)
-                case is Sun:
-                    realm.create(Sun.self, value: entity, update: true)
-                case is Switch:
-                    realm.create(Switch.self, value: entity, update: true)
-                case is Thermostat:
-                    realm.create(Thermostat.self, value: entity, update: true)
-                case is Weblink:
-                    realm.create(Weblink.self, value: entity, update: true)
-                case is Zone:
-                    realm.create(Zone.self, value: entity, update: true)
-                default:
-                    print("Unable to save \(entity.Domain)!")
                 }
-                realm.create(Entity.self, value: entity, update: true)
+                if entitiesByType["Group"] == nil { entitiesByType["Group"] = [] }
+                entitiesByType["Group"]?.append(group)
             }
         }
     }
@@ -630,11 +678,11 @@ public class HomeAssistantAPI {
         return CallService(domain: "homeassistant", service: "turn_off", serviceData: ["entity_id": entity.ID])
     }
 
-    func toggle(entityId: String) -> Promise<[ServicesResponse]> {
-        let entity = realm.object(ofType: Entity.self, forPrimaryKey: entityId)
-        self.showMurmur(title: "\(entity!.Name) toggled")
-        return CallService(domain: "homeassistant", service: "toggle", serviceData: ["entity_id": entityId])
-    }
+//    func toggle(entityId: String) -> Promise<[ServicesResponse]> {
+//        let entity = realm.object(ofType: Entity.self, forPrimaryKey: entityId)
+//        self.showMurmur(title: "\(entity!.Name) toggled")
+//        return CallService(domain: "homeassistant", service: "toggle", serviceData: ["entity_id": entityId])
+//    }
 
     func toggleEntity(entity: Entity) -> Promise<[ServicesResponse]> {
         self.showMurmur(title: "\(entity.Name) toggled")

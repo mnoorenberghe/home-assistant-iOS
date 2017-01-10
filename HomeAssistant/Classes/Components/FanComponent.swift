@@ -11,10 +11,10 @@ import ObjectMapper
 
 class Fan: Entity {
 
-    dynamic var Oscillating = false
-    dynamic var Speed: String? = nil
-    dynamic var SupportsSetSpeed: Bool = false
-    dynamic var SupportsOscillate: Bool = false
+    var Oscillating = false
+    var Speed: String? = nil
+    var SupportsSetSpeed: Bool = false
+    var SupportsOscillate: Bool = false
     var SupportedFeatures: Int?
 
     override func mapping(map: Map) {
@@ -34,10 +34,6 @@ class Fan: Entity {
 
     override var ComponentIcon: String {
         return "mdi:fan"
-    }
-
-    override class func ignoredProperties() -> [String] {
-        return ["SupportedFeatures", "SupportsSetSpeed", "SupportsOscillate"]
     }
 }
 

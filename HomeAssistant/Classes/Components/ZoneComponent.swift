@@ -12,12 +12,12 @@ import CoreLocation
 
 class Zone: Entity {
 
-    dynamic var Latitude: Double = 0.0
-    dynamic var Longitude: Double = 0.0
-    dynamic var Radius: Double = 0.0
-    dynamic var trackingEnabled = true
-    dynamic var enterNotification = true
-    dynamic var exitNotification = true
+    var Latitude: Double = 0.0
+    var Longitude: Double = 0.0
+    var Radius: Double = 0.0
+    var trackingEnabled = true
+    var enterNotification = true
+    var exitNotification = true
 
     override func mapping(map: Map) {
         super.mapping(map: map)

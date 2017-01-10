@@ -11,7 +11,7 @@ import ObjectMapper
 
 class Automation: Entity {
 
-    dynamic var LastTriggered: Date? = nil
+    var LastTriggered: Date? = nil
 
     override func mapping(map: Map) {
         super.mapping(map: map)

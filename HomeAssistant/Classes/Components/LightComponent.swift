@@ -8,28 +8,27 @@
 
 import Foundation
 import ObjectMapper
-import RealmSwift
 
 class Light: SwitchableEntity {
 
-    var Brightness = RealmOptional<Float>()
-    var ColorTemp = RealmOptional<Float>()
-    dynamic var RGBColor: [Int]?
-    dynamic var XYColor: [Int]?
-    dynamic var SupportsBrightness: Bool = false
-    dynamic var SupportsColorTemp: Bool = false
-    dynamic var SupportsEffect: Bool = false
-    dynamic var SupportsFlash: Bool = false
-    dynamic var SupportsRGBColor: Bool = false
-    dynamic var SupportsTransition: Bool = false
-    dynamic var SupportsXYColor: Bool = false
+    var Brightness: Float?
+    var ColorTemp: Float?
+    var RGBColor: [Int]?
+    var XYColor: [Int]?
+    var SupportsBrightness: Bool = false
+    var SupportsColorTemp: Bool = false
+    var SupportsEffect: Bool = false
+    var SupportsFlash: Bool = false
+    var SupportsRGBColor: Bool = false
+    var SupportsTransition: Bool = false
+    var SupportsXYColor: Bool = false
     var SupportedFeatures: Int?
 
     override func mapping(map: Map) {
         super.mapping(map: map)
 
-        Brightness.value   <- map["attributes.brightness"]
-        ColorTemp.value    <- map["attributes.color_temp"]
+        Brightness         <- map["attributes.brightness"]
+        ColorTemp          <- map["attributes.color_temp"]
         RGBColor           <- map["attributes.rgb_color"]
         XYColor            <- map["attributes.xy_color"]
         SupportedFeatures  <- map["attributes.supported_features"]
@@ -64,11 +63,6 @@ class Light: SwitchableEntity {
 
     override var ComponentIcon: String {
         return "mdi:lightbulb"
-    }
-
-    override class func ignoredProperties() -> [String] {
-        return ["SupportedFeatures", "SupportsBrightness", "SupportsColorTemp", "SupportsEffect", "SupportsFlash",
-                "SupportsRGBColor", "SupportsTransition", "SupportsXYColor", "RGBColor", "XYColor"]
     }
 }
 

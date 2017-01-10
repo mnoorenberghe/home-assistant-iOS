@@ -75,87 +75,90 @@ class RootTabBarViewController: UITabBarController, UITabBarControllerDelegate {
 
         var tabViewControllers: [UIViewController] = []
 
-        let allGroups = realm.objects(Group.self).filter {
-            var shouldReturn = true
-            //            if prefs.bool(forKey: "allowAllGroups") == false {
-            //                shouldReturn = (!$0.Auto && !$0.Hidden && $0.View)
-            //                print("$0.Auto: \($0.Auto) !$0.Auto: \(!$0.Auto)")
-            //                print("$0.Hidden: \($0.Hidden) !$0.Hidden: \(!$0.Hidden)")
-            //                print("$0.View: \($0.View) !$0.View: \(!$0.View)")
-            //                print("ShouldReturn is now", shouldReturn)
-            //            }
-            // If all entities are a group, return false
-            var groupCheck = [String]()
-            for entity in $0.Entities {
-                groupCheck.append(entity.Domain)
-            }
-            let uniqueCheck = Array(Set(groupCheck))
-            if uniqueCheck.count == 1 && uniqueCheck[0] == "group" {
-                shouldReturn = false
-            }
-            return shouldReturn
-            }.sorted {
-                if $0.IsAllGroup == true {
-                    return false
-                } else {
-                    if $0.Order.value != nil && $1.Order.value != nil {
-                        return $0.Order.value! < $1.Order.value!
+        print("GROUPS", HomeAssistantAPI.sharedInstance.entitiesByType["Group"])
+
+        if let storedGroups = HomeAssistantAPI.sharedInstance.entitiesByType["Group"] as? [Group] {
+            let allGroups = storedGroups.filter {
+                var shouldReturn = true
+                //            if prefs.bool(forKey: "allowAllGroups") == false {
+                //                shouldReturn = (!$0.Auto && !$0.Hidden && $0.View)
+                //                print("$0.Auto: \($0.Auto) !$0.Auto: \(!$0.Auto)")
+                //                print("$0.Hidden: \($0.Hidden) !$0.Hidden: \(!$0.Hidden)")
+                //                print("$0.View: \($0.View) !$0.View: \(!$0.View)")
+                //                print("ShouldReturn is now", shouldReturn)
+                //            }
+                // If all entities are a group, return false
+                var groupCheck = [String]()
+                for entity in $0.Entities {
+                    groupCheck.append(entity.Domain)
+                }
+                let uniqueCheck = Array(Set(groupCheck))
+                if uniqueCheck.count == 1 && uniqueCheck[0] == "group" {
+                    shouldReturn = false
+                }
+                return shouldReturn
+                }.sorted {
+                    if $0.IsAllGroup == true {
+                        return false
                     } else {
-                        return $0.FriendlyName! < $1.FriendlyName!
+                        if $0.Order != nil && $1.Order != nil {
+                            return $0.Order! < $1.Order!
+                        } else {
+                            return $0.FriendlyName! < $1.FriendlyName!
+                        }
                     }
-                }
-        }
-        for (index, group) in allGroups.enumerated() {
-            if group.Entities.count < 1 { continue }
-            let groupView = GroupViewController()
-            groupView.GroupID = group.ID
-            groupView.Order = group.Order.value
-            let groupName = group.Auto ? group.Name.capitalized : group.Name
-            groupView.title = groupName
-            groupView.tabBarItem.title = groupName
-            let icon = group.Entities.first!.EntityIcon(width: 30, height: 30, color: tabBarIconColor)
-            groupView.tabBarItem = UITabBarItem(title: groupName, image: icon, tag: index)
-
-            if group.Order.value == nil {
-                // Save the index now since it should be first time running
-                // swiftlint:disable:next force_try
-                try! realm.write {
-                    group.Order.value = index
-                }
             }
+            for (index, group) in allGroups.enumerated() {
+                if group.Entities.count < 1 { continue }
+                let groupView = GroupViewController()
+                groupView.GroupID = group.ID
+                groupView.Order = group.Order
+                let groupName = group.Auto ? group.Name.capitalized : group.Name
+                groupView.title = groupName
+                groupView.tabBarItem.title = groupName
+                let icon = group.Entities.first!.EntityIcon(width: 30, height: 30, color: tabBarIconColor)
+                groupView.tabBarItem = UITabBarItem(title: groupName, image: icon, tag: index)
 
-            if HomeAssistantAPI.sharedInstance.locationEnabled {
-                var rightBarItems: [UIBarButtonItem] = []
+                if group.Order == nil {
+                    // Save the index now since it should be first time running
+                    // swiftlint:disable:next force_try
+                    group.Order = index
+                }
 
-                let uploadIcon = getIconForIdentifier("mdi:upload",
-                                                      iconWidth: 30,
-                                                      iconHeight: 30,
-                                                      color: tabBarIconColor)
+                if HomeAssistantAPI.sharedInstance.locationEnabled {
+                    var rightBarItems: [UIBarButtonItem] = []
 
-                rightBarItems.append(UIBarButtonItem(image: uploadIcon,
-                                                     style: .plain,
-                                                     target: self,
-                                                     action: #selector(RootTabBarViewController.sendCurrentLocation(_:))
+                    let uploadIcon = getIconForIdentifier("mdi:upload",
+                                                          iconWidth: 30,
+                                                          iconHeight: 30,
+                                                          color: tabBarIconColor)
+
+                    rightBarItems.append(UIBarButtonItem(image: uploadIcon,
+                                                         style: .plain,
+                                                         target: self,
+                                                         action: #selector(RootTabBarViewController.sendCurrentLocation(_:))
+                        )
                     )
-                )
 
-                let mapIcon = getIconForIdentifier("mdi:map",
-                                                   iconWidth: 30,
-                                                   iconHeight: 30,
-                                                   color: tabBarIconColor)
+                    let mapIcon = getIconForIdentifier("mdi:map",
+                                                       iconWidth: 30,
+                                                       iconHeight: 30,
+                                                       color: tabBarIconColor)
 
-                rightBarItems.append(UIBarButtonItem(image: mapIcon,
-                                                     style: .plain,
-                                                     target: self,
-                                                     action: #selector(RootTabBarViewController.openMapView(_:))))
+                    rightBarItems.append(UIBarButtonItem(image: mapIcon,
+                                                         style: .plain,
+                                                         target: self,
+                                                         action: #selector(RootTabBarViewController.openMapView(_:))))
 
-                groupView.navigationItem.setRightBarButtonItems(rightBarItems, animated: true)
+                    groupView.navigationItem.setRightBarButtonItems(rightBarItems, animated: true)
+                }
+
+                let navController = UINavigationController(rootViewController: groupView)
+
+                tabViewControllers.append(navController)
             }
-
-            let navController = UINavigationController(rootViewController: groupView)
-
-            tabViewControllers.append(navController)
         }
+
         let settingsIcon = getIconForIdentifier("mdi:settings", iconWidth: 30, iconHeight: 30, color: tabBarIconColor)
 
         let settingsView = SettingsViewController()
@@ -185,10 +188,11 @@ class RootTabBarViewController: UITabBarController, UITabBarControllerDelegate {
                 if let navController = view as? UINavigationController {
                     if let groupView = navController.viewControllers[0] as? GroupViewController {
                         let update = ["ID": groupView.GroupID, "Order": index] as [String : Any]
+                        print("TODO: IMPLEMENT GROUP ORDER SAVING")
                         // swiftlint:disable:next force_try
-                        try! realm.write {
-                            realm.create(Group.self, value: update as AnyObject, update: true)
-                        }
+//                        try! realm.write {
+//                            realm.create(Group.self, value: update as AnyObject, update: true)
+//                        }
                         print("\(index): \(groupView.tabBarItem.title!) New: \(index) Old: \(groupView.Order!)")
                     } else {
                         print("Couldn't cast to a group, must be settings, skipping!")

@@ -11,7 +11,7 @@ import ObjectMapper
 
 class BinarySensor: SwitchableEntity {
 
-    dynamic var SensorClass: String? = nil
+    var SensorClass: String? = nil
 
     override func mapping(map: Map) {
         super.mapping(map: map)

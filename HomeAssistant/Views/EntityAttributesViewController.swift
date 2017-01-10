@@ -9,7 +9,6 @@
 import UIKit
 import Eureka
 import ObjectMapper
-import RealmSwift
 import MBProgressHUD
 
 class EntityAttributesViewController: FormViewController {
@@ -20,7 +19,7 @@ class EntityAttributesViewController: FormViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        if let entity = realm.object(ofType: Entity.self, forPrimaryKey: entityID as AnyObject) {
+        if let entity = HomeAssistantAPI.sharedInstance.entitiesByID[entityID] {
             self.title = (entity.FriendlyName != nil) ? entity.Name : "Attributes"
 
             if let picture = entity.Picture {
@@ -119,7 +118,7 @@ class EntityAttributesViewController: FormViewController {
                     if let mediaPlayer = entity as? MediaPlayer {
                         form.last! <<< SwitchRow(attribute.0) {
                             $0.title = "Mute"
-                            $0.value = mediaPlayer.IsVolumeMuted.value
+                            $0.value = mediaPlayer.IsVolumeMuted
                             }.onChange { row -> Void in
                                 if row.value! {
                                     mediaPlayer.muteOn()
@@ -191,7 +190,7 @@ class EntityAttributesViewController: FormViewController {
             if let userInfoDict = userInfo as? [String : Any] {
                 if let event = Mapper<StateChangedEvent>().map(JSON: userInfoDict) {
                     if event.EntityID != entityID { return }
-                    if let entity = realm.object(ofType: Entity.self, forPrimaryKey: entityID as AnyObject) {
+                    if let entity = HomeAssistantAPI.sharedInstance.entitiesByID[entityID] {
                         if let newState = event.NewState {
                             var updateDict: [String:Any] = [:]
                             newState.Attributes["state"] = entity.State
@@ -230,7 +229,7 @@ class EntityAttributesViewController: FormViewController {
                                     break
                                 case "volume_level":
                                     if let mediaPlayer = entity as? MediaPlayer {
-                                        if let level = mediaPlayer.VolumeLevel.value {
+                                        if let level = mediaPlayer.VolumeLevel {
                                             updateDict[key] = Float(level) * Float(100.0)
                                         }
                                     }

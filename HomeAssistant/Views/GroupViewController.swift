@@ -11,7 +11,6 @@ import SafariServices
 import Eureka
 import CoreLocation
 import ObjectMapper
-import RealmSwift
 
 class GroupViewController: FormViewController {
 
@@ -30,11 +29,13 @@ class GroupViewController: FormViewController {
         super.viewDidLoad()
 
         if GroupID != "" {
-            let group = realm.object(ofType: Group.self, forPrimaryKey: GroupID as AnyObject)
+            let groupEntities = HomeAssistantAPI.sharedInstance.entitiesByGroup[GroupID]!
+
+            print("GROUP ENTITIES", groupEntities)
 
             self.form
                 +++ Section()
-            for entity in group!.Entities {
+            for entity in groupEntities {
                 switch entity.Domain {
                 case "script", "scene":
                     self.form.last! <<< ButtonRow(entity.ID) {
@@ -92,8 +93,8 @@ class GroupViewController: FormViewController {
                             }
                     }
                 case "device_tracker":
-                    if let dtracker = realm.object(ofType: DeviceTracker.self, forPrimaryKey: entity.ID) {
-                        if dtracker.Latitude.value != nil && dtracker.Longitude.value != nil {
+                    if let dtracker = HomeAssistantAPI.sharedInstance.entitiesByID[entity.ID] as? DeviceTracker {
+                        if dtracker.Latitude != nil && dtracker.Longitude != nil {
                             self.form.last! <<< LocationRow(entity.ID) {
                                 $0.title = entity.Name
                                 $0.value = dtracker.location()
@@ -203,13 +204,13 @@ class GroupViewController: FormViewController {
                         $0.title = entity.Name
                         $0.value = Float(entity.State)
                         if let slider = entity as? InputSlider {
-                            if let min = slider.Minimum.value {
+                            if let min = slider.Minimum {
                                 $0.minimumValue = min
                             }
-                            if let max = slider.Maximum.value {
+                            if let max = slider.Maximum {
                                 $0.maximumValue = max
                             }
-                            if let steps = slider.Step.value {
+                            if let steps = slider.Step {
                                 $0.steps = UInt(steps)
                             }
                         }

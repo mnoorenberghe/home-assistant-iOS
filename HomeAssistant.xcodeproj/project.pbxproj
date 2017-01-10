@@ -13,6 +13,7 @@
 		8A8D77622C1E7600D10BE8A4 /* Pods_HomeAssistant.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 352613F4CF40158FA40BF5D3 /* Pods_HomeAssistant.framework */; };
 		8D653DB21337245B6FF6E3AE /* Pods_HomeAssistantTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 50EA5FF6155A1CAA7A186D73 /* Pods_HomeAssistantTests.framework */; };
 		B42EC0201B3E045A771E909C /* Pods-HomeAssistant-metadata.plist in Resources */ = {isa = PBXBuildFile; fileRef = 34C5CC8974502E3DE3BB68B0 /* Pods-HomeAssistant-metadata.plist */; };
+		B6030F3F1E2576FF001865B3 /* PushNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6030F3E1E2576FF001865B3 /* PushNotification.swift */; };
 		B60615BB1D1F117700249C11 /* MorganFreemanSounds.csv in Resources */ = {isa = PBXBuildFile; fileRef = B60614B51D1F117700249C11 /* MorganFreemanSounds.csv */; };
 		B606160A1D1F117700249C11 /* US-EN-Morgan-Freeman-Back-Door-Closed.wav in Resources */ = {isa = PBXBuildFile; fileRef = B60615051D1F117700249C11 /* US-EN-Morgan-Freeman-Back-Door-Closed.wav */; };
 		B606160B1D1F117700249C11 /* US-EN-Morgan-Freeman-Back-Door-Locked.wav in Resources */ = {isa = PBXBuildFile; fileRef = B60615061D1F117700249C11 /* US-EN-Morgan-Freeman-Back-Door-Locked.wav */; };
@@ -279,6 +280,7 @@
 		86B81352B1184CB193CED943 /* Pods-NotificationContentExtension.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-NotificationContentExtension.debug.xcconfig"; path = "Pods/Target Support Files/Pods-NotificationContentExtension/Pods-NotificationContentExtension.debug.xcconfig"; sourceTree = "<group>"; };
 		923F8D630AC5BA0C36905E8A /* Pods_HomeAssistantUITests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_HomeAssistantUITests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		93F0B444A811A0269A540879 /* Pods-NotificationContentExtension-metadata.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; name = "Pods-NotificationContentExtension-metadata.plist"; path = "Pods/Pods-NotificationContentExtension-metadata.plist"; sourceTree = "<group>"; };
+		B6030F3E1E2576FF001865B3 /* PushNotification.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PushNotification.swift; sourceTree = "<group>"; };
 		B60614B51D1F117700249C11 /* MorganFreemanSounds.csv */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = MorganFreemanSounds.csv; sourceTree = "<group>"; };
 		B60615051D1F117700249C11 /* US-EN-Morgan-Freeman-Back-Door-Closed.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "US-EN-Morgan-Freeman-Back-Door-Closed.wav"; sourceTree = "<group>"; };
 		B60615061D1F117700249C11 /* US-EN-Morgan-Freeman-Back-Door-Locked.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "US-EN-Morgan-Freeman-Back-Door-Locked.wav"; sourceTree = "<group>"; };
@@ -892,6 +894,7 @@
 				B629E8D51DAD8CFA00040A90 /* PushRegistrationRequest.swift */,
 				B60EAE9A1DBC347C0062C97C /* PushRegistrationResponse.swift */,
 				B6767A501D0234E700F2A08B /* SwitchableEntity.swift */,
+				B6030F3E1E2576FF001865B3 /* PushNotification.swift */,
 			);
 			path = Classes;
 			sourceTree = "<group>";
@@ -1591,6 +1594,7 @@
 				B6F700521CB374F700753BAB /* RootTabBarViewController.swift in Sources */,
 				B64D047A1CB8908B00B945C8 /* StateChanged.swift in Sources */,
 				B6E857A21CB1CCCC00F96925 /* Utils.swift in Sources */,
+				B6030F3F1E2576FF001865B3 /* PushNotification.swift in Sources */,
 				B6E47E8E1CBA3EDB0027F6CA /* Zone.swift in Sources */,
 				B641BC251E20A17B002CCBC1 /* OpenInChromeController.swift in Sources */,
 				B6DBF7681D89F8C100402A57 /* Fan.swift in Sources */,

@@ -37,6 +37,7 @@ PODS:
   - Realm/Headers (2.1.2)
   - RealmSwift (2.1.2):
     - Realm (= 2.1.2)
+  - Starscream (2.0.2)
   - SwiftGen (4.1.0)
   - SwiftLint (0.15.0)
   - SwiftLocation (1.1.1)
@@ -61,6 +62,7 @@ DEPENDENCIES:
   - PromiseKit
   - Realm
   - RealmSwift
+  - Starscream (~> 2.0.0)
   - SwiftGen
   - SwiftLint
   - SwiftLocation
@@ -107,11 +109,12 @@ SPEC CHECKSUMS:
   PromiseKit: 56baec63efa89210c023260879435a5a6b3bff00
   Realm: efe855f4d977c8ce5a82d3116d9f1ff155a6550c
   RealmSwift: 17d6ee30b6f9df86364408c2197492e33bfea567
+  Starscream: 6c135a34e0a6e60cedaa0b30db67a4c05cf7cd38
   SwiftGen: d29fd8b7aa52092411d415fb09d0abd3d79ea1a5
   SwiftLint: d73999f81682ab8114d6408c89f83177b2c197d7
   SwiftLocation: aac16955b508c46b82bf07fcceb7e2a3b382b8d5
   Whisper: '08be92623311f8e53201e62e17f6d7b9599a4714'
 
-PODFILE CHECKSUM: 918e2fd6112b3455041386d15aceb961cf7d1717
+PODFILE CHECKSUM: ce0b6b1c86545af41faadd82ba03644867c94099
 
 COCOAPODS: 1.1.1

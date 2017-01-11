@@ -6,21 +6,22 @@
 //  Copyright © 2016 Robbie Trencheny. All rights reserved.
 //
 
-import Foundation
 import Alamofire
 import AlamofireImage
-import PromiseKit
-import IKEventSource
-import SwiftLocation
-import CoreLocation
-import Whisper
 import AlamofireObjectMapper
-import ObjectMapper
-import DeviceKit
-import PermissionScope
+import CoreLocation
 import Crashlytics
+import DeviceKit
+import Foundation
+import IKEventSource
+import ObjectMapper
+import PermissionScope
+import PromiseKit
 import RealmSwift
+import Starscream
+import SwiftLocation
 import UserNotifications
+import Whisper
 
 let prefs = UserDefaults(suiteName: "group.io.robbie.homeassistant")!
 
@@ -56,6 +57,21 @@ public class HomeAssistantAPI {
     private var headers = [String: String]()
 
     private var manager: Alamofire.SessionManager?
+
+    func StartWebsocket() {
+        var urlComponents = URLComponents(string: baseAPIURL)!
+        urlComponents.path = urlComponents.path.appending("websocket")
+        urlComponents.scheme = (urlComponents.scheme == "http") ? "ws" : "wss"
+        let websocketURL = urlComponents.url!
+        print("websocketURL", websocketURL)
+        let socket = WebSocket(url: websocketURL)
+        socket.callbackQueue = DispatchQueue(label: "com.vluxe.starscream.myapp")
+        let wsDelegate = HomeAssistantWebsockets()
+        socket.delegate = wsDelegate
+        socket.pongDelegate = wsDelegate
+        socket.connect()
+        print("Is socket connected?", socket.isConnected)
+    }
 
     func Setup(baseURL: String, password: String) -> Promise<StatusResponse> {
         self.baseAPIURL = baseURL+"/api/"
@@ -1239,4 +1255,26 @@ enum LocationUpdateTypes {
     case BeaconRegionExit
     case Manual
     case SignificantLocationUpdate
+}
+
+class HomeAssistantWebsockets: WebSocketDelegate, WebSocketPongDelegate {
+    public func websocketDidConnect(socket: WebSocket) {
+        print("WEBSOCKET CONNECTED")
+    }
+
+    public func websocketDidDisconnect(socket: WebSocket, error: NSError?) {
+        print("WEBSOCKET DISCONNECTED: \(error?.localizedDescription)")
+    }
+
+    public func websocketDidReceiveMessage(socket: WebSocket, text: String) {
+        print("WEBSOCKET TEXT RECEIVED: \(text)")
+    }
+
+    public func websocketDidReceiveData(socket: WebSocket, data: Data) {
+        print("WEBSOCKET DATA RECEIVED: \(data.count)")
+    }
+
+    public func websocketDidReceivePong(socket: WebSocket, data: Data?) {
+        print("WEBSOCKET PONG RECEIVED: \(data?.count)")
+    }
 }

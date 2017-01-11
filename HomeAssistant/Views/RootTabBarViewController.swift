@@ -69,6 +69,8 @@ class RootTabBarViewController: UITabBarController, UITabBarControllerDelegate {
     // swiftlint:disable:next function_body_length
     func loadTabs() {
 
+        HomeAssistantAPI.sharedInstance.StartWebsocket()
+
         self.delegate = self
 
         let tabBarIconColor = Entity().DefaultEntityUIColor

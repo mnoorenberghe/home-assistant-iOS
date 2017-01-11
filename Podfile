@@ -24,6 +24,7 @@ target 'HomeAssistant' do
   pod 'PromiseKit'
   pod 'Realm'
   pod 'RealmSwift'
+  pod 'Starscream', '~> 2.0.0'
   pod 'SwiftGen'
   pod 'SwiftLint'
   pod 'SwiftLocation'

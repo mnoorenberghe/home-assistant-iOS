@@ -13,15 +13,15 @@ import MapKit
 
 // MARK: LocationRow
 
-public final class LocationRow: SelectorRow<PushSelectorCell<CLLocation>, MapViewController>, RowType {
+public final class LocationRow: SelectorRow<PushSelectorCell<CLLocation>>, RowType {
     public required init(tag: String?) {
-        super.init(tag: tag)
+        super.init(tag: tag)/*
         presentationMode = .show(controllerProvider: ControllerProvider.callback {
             return MapViewController { _ in
             }
             }, onDismiss: {
                 vc in _ = vc.navigationController?.popViewController(animated: true)
-        })
+        })*/
 
         displayValueFor = {
             guard let location = $0 else { return "" }

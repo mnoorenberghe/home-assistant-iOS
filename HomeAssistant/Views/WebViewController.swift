@@ -48,6 +48,7 @@ class WebViewController: UIViewController, WKNavigationDelegate, WKUIDelegate, C
 
         webView.leftAnchor.constraint(equalTo: self.view.leftAnchor).isActive = true
         webView.rightAnchor.constraint(equalTo: self.view.rightAnchor).isActive = true
+        webView.centerXAnchor.constraint(equalTo: self.view.centerXAnchor).isActive = true
         webView.topAnchor.constraint(equalTo: self.topLayoutGuide.bottomAnchor).isActive = true
         webView.bottomAnchor.constraint(equalTo: self.bottomLayoutGuide.topAnchor).isActive = true
 
